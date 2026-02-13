@@ -4,51 +4,72 @@
   <meta charset="UTF-8">
   <title>貸借対照表（流動性配列法）</title>
 
-  <!-- PWA用 -->
+  <!-- PWA設定 -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#ffffff">
+  <link rel="manifest" href="manifest.json">
 
   <style>
     body {
       font-family: sans-serif;
       text-align: center;
+      margin: 0;
+      padding: 20px;
     }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
     .container {
       display: flex;
       justify-content: center;
       margin-top: 20px;
     }
+
     .column {
-      width: 200px;
-      padding: 10px;
+      width: 220px;
+      padding: 15px;
       border: 2px solid #000;
       margin: 0 10px;
+      border-radius: 8px;
     }
+
     .divider {
       width: 10px;
       background-color: gray;
       transition: background-color 0.3s;
     }
+
     input {
       width: 100px;
       margin: 5px;
+      padding: 4px;
     }
+
+    button {
+      margin: 5px;
+      padding: 6px 10px;
+    }
+
     .title {
       font-weight: bold;
       margin-bottom: 10px;
+      font-size: 18px;
     }
   </style>
 </head>
+
 <body>
 
 <h2>貸借対照表（流動性配列法）</h2>
 
 <div>
-  <label>B: <input type="number" id="b" value="1000"></label>
-  <label>O: <input type="number" id="o" value="10"></label>
-  <label>T1: <input type="number" id="t1" value="20"></label>
-  <label>T2: <input type="number" id="t2" value="30"></label>
+  <label>B: <input type="number" id="b" step="any" value="1000"></label>
+  <label>O: <input type="number" id="o" step="any" value="10"></label>
+  <label>T1: <input type="number" id="t1" step="any" value="20"></label>
+  <label>T2: <input type="number" id="t2" step="any" value="30"></label>
+  <br>
   <button onclick="calculate()">計算</button>
   <button onclick="resetInputs()">リセット</button>
 </div>
@@ -70,23 +91,34 @@
 </div>
 
 <script>
+function formatNumber(value) {
+  return Number(value).toFixed(2);
+}
+
+function getValue(id) {
+  const val = parseFloat(document.getElementById(id).value);
+  return isNaN(val) ? 0 : val;
+}
+
 function calculate() {
-  const B = parseFloat(document.getElementById('b').value);
-  const O = parseFloat(document.getElementById('o').value);
-  const T1 = parseFloat(document.getElementById('t1').value);
-  const T2 = parseFloat(document.getElementById('t2').value);
+
+  const B = getValue('b');
+  const O = getValue('o');
+  const T1 = getValue('t1');
+  const T2 = getValue('t2');
 
   const fixedAssets = B - O * T1;
   const capital = B - O * T2;
   const currentAssets = O * T1;
   const currentLiabilities = O * T2;
 
-  document.getElementById('fixedAssets').textContent = fixedAssets;
-  document.getElementById('capital').textContent = capital;
-  document.getElementById('currentAssets').textContent = currentAssets;
-  document.getElementById('currentLiabilities').textContent = currentLiabilities;
+  document.getElementById('fixedAssets').textContent = formatNumber(fixedAssets);
+  document.getElementById('capital').textContent = formatNumber(capital);
+  document.getElementById('currentAssets').textContent = formatNumber(currentAssets);
+  document.getElementById('currentLiabilities').textContent = formatNumber(currentLiabilities);
 
   const divider = document.getElementById('divider');
+
   if (fixedAssets > capital) {
     divider.style.backgroundColor = 'red';
   } else if (fixedAssets < capital) {
@@ -97,21 +129,26 @@ function calculate() {
 }
 
 function resetInputs() {
-  document.getElementById('b').value = '';
-  document.getElementById('o').value = '';
-  document.getElementById('t1').value = '';
-  document.getElementById('t2').value = '';
 
-  document.getElementById('fixedAssets').textContent = '-';
-  document.getElementById('capital').textContent = '-';
-  document.getElementById('currentAssets').textContent = '-';
-  document.getElementById('currentLiabilities').textContent = '-';
+  ['b','o','t1','t2'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+
+  ['fixedAssets','capital','currentAssets','currentLiabilities']
+    .forEach(id => {
+      document.getElementById(id).textContent = '-';
+    });
+
   document.getElementById('divider').style.backgroundColor = 'gray';
 }
 
-/* Service Worker 登録 */
+/* Service Worker 登録（PWA用） */
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js');
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log("Service Worker 登録成功"))
+      .catch(err => console.log("Service Worker 登録失敗:", err));
+  });
 }
 </script>
 
